@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XTrap/XETrapInit.c,v 1.3 2002/10/16 00:37:27 dawes Exp $ */
+/* $XFree86$ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991, 1992 by Digital Equipment Corp., 
 Maynard, MA
