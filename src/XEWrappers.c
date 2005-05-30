@@ -264,15 +264,11 @@ int XETrapAppWhileLoop(XtAppContext app, XETC *tc, Bool *done)
 int XETrapWaitForSomething(XtAppContext app)
 {
 #ifndef vms
-#ifndef X11R5
     return(_XtWaitForSomething(app, FALSE, FALSE, FALSE, FALSE, TRUE
 #ifdef XTHREADS
     , FALSE
 #endif /* XTHREADS */
     , 0L));
-#else /* X11R5 */
-    return(_XtwaitForSomething(FALSE, FALSE, FALSE, TRUE, 0L, app));
-#endif /* X11R5 */
 #else   /* vms */
 #define IS_AFTER(t1,t2) (((t2).high > (t1).high) \
        ||(((t2).high == (t1).high)&& ((t2).low > (t1).low)))
