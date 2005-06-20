@@ -41,8 +41,8 @@ typedef struct _ConverterRec **ConverterTable;  /* from ConvertI.h */
 #include "libdef.h"
 typedef struct _CallbackRec *CallbackList;      /* from CallbackI.h */
 typedef struct _XtGrabRec  *XtGrabList;         /* from EventI.h */
-#include "PassivGraI.h"
-#include "InitialI.h"
+#include <X11/PassivGraI.h>
+#include <X11/InitialI.h>
 #else  /* VMSDW_V3 */
 typedef struct _ModToKeysymTable {
     Modifiers mask;
@@ -59,10 +59,10 @@ typedef long  fd_mask;
 typedef	struct Fd_set {
 	fd_mask	fds_bits[howmany(256, NFDBITS)];
 } Fd_set;                                       /* from fd.h */
-#include "InitializeI.h"
+#include <X11/InitializeI.h>
 #endif  /* VMSDW_V3 */
 #else  /* !vms */
-#include "IntrinsicI.h"
+#include <X11/IntrinsicI.h>
 #define IS_AT_OR_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
         || (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec >= (t1).tv_usec)))
 #endif /* vms */
