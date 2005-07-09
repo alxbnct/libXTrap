@@ -10,7 +10,7 @@ libXTrap_la_SOURCES = 	\
 	XETrapInit.c	\
 	XEWrappers.c	
 
-libXTrap_la_CFLAGS = @DEP_CFLAGS@
+AM_CFLAGS = @DEP_CFLAGS@
 
 libXTrap_la_LIBADD = @DEP_LIBS@
 
