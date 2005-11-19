@@ -6,5 +6,7 @@ includedir=@includedir@
 Name: XTrap
 Description: X Trap Library
 Version: @PACKAGE_VERSION@
-Cflags: -I${includedir} @XTRAP_CFLAGS@
-Libs: -L${libdir} -lXTrap @XTRAP_LIBS@
+Requires: trapproto
+Requires.private: x11 xext xt
+Cflags: -I${includedir}
+Libs: -L${libdir} -lXTrap
