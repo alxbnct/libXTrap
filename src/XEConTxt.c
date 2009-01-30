@@ -49,8 +49,6 @@ SOFTWARE.
 # define FALSE 0L
 #endif
 
-extern char *extensionData;
-
 static XETC     TC;
 
 /*
@@ -325,10 +323,6 @@ void XEFreeTC(XETC *tc)
         }
 
         XtFree((XtPointer)tc);
-        if (extensionData)
-        {
-            XtFree(extensionData);
-        }
     }
     return;
 }
