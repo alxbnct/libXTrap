@@ -24,22 +24,22 @@ dnl Process this file with autoconf to create configure.
 AC_PREREQ([2.57])
 
 AC_INIT(libXTrap, 1.0.0, [https://bugs.freedesktop.org/enter_bug.cgi?product=xorg], libXTrap)
-AM_INIT_AUTOMAKE([dist-bzip2])
+AM_INIT_AUTOMAKE([foreign dist-bzip2])
 AM_MAINTAINER_MODE
 
-# Require xorg-macros: XORG_CWARNFLAGS, XORG_CHANGELOG
-m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.2 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION(1.2)
+# Require xorg-macros: XORG_COMPILER_FLAGS, XORG_CHANGELOG
+m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.17 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.17)
 AC_CONFIG_HEADERS([config.h])
 
 # Check for progs
 AC_PROG_CC
 AC_PROG_LIBTOOL
-XORG_CWARNFLAGS
+XORG_COMPILER_FLAGS
 
 # Check for dependencies
 PKG_CHECK_MODULES(XTRAP, x11 xt trapproto xext xextproto)
-XTRAP_CFLAGS="$CWARNFLAGS $XTRAP_CFLAGS"
+XTRAP_CFLAGS="$BASE_CFLAGS $XTRAP_CFLAGS"
 AC_SUBST(XTRAP_CFLAGS)
 AC_SUBST(XTRAP_LIBS)
 
