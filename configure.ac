@@ -30,7 +30,7 @@ AM_MAINTAINER_MODE
 # Require xorg-macros: XORG_CWARNFLAGS, XORG_CHANGELOG
 m4_ifndef([XORG_MACROS_VERSION], [AC_FATAL([must install xorg-macros 1.2 or later before running autoconf/autogen])])
 XORG_MACROS_VERSION(1.2)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 # Check for progs
 AC_PROG_CC
