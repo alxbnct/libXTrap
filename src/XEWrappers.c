@@ -109,13 +109,7 @@ Boolean XETrapDispatchEvent(XEvent *pevent, XETC *tc)
 XtInputMask XETrapAppPending(XtAppContext app)
 {
     TimerEventRec *te_ptr;
-#ifndef VMS
     struct timeval cur_time;
-#else  /* vms */
-    vms_time cur_time;
-    long efnMask = 0L;
-    int status;
-#endif /* vms */
     XtInputMask retmask = XtAppPending(app);        /* Prime XtIMEvent */
 
     retmask &= ~(XtIMTimer | XtIMAlternateInput);   /* clear timer & input */

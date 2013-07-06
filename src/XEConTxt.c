@@ -289,9 +289,6 @@ int XEChangeTC(XETC *tc, CARD32 mask, XETCValues *values)
     {
         status = XEFlushConfig(tc);
     }
-#ifdef VMS
-    sys$setast(True);   /* Make sure AST's are enabled */
-#endif /* VMS */
     return(status);
 }
 
