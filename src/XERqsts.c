@@ -35,7 +35,6 @@ SOFTWARE.
 #include <X11/Xproto.h>
 #endif /* NO_DEC_BUG_FIX */
 /* the following's a hack to support V3.1 protocol */
-#if defined(__STDC__) && !defined(UNIXCPP)
 #define GetOldReq(name, req, old_length) \
         WORD64ALIGN\
         if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
@@ -45,18 +44,6 @@ SOFTWARE.
         req->length = old_length>>2;\
         dpy->bufptr += old_length;\
         dpy->request++
-
-#else  /* non-ANSI C uses empty comment instead of "##" for token concat */
-#define GetOldReq(name, req, old_length) \
-        WORD64ALIGN\
-        if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
-                _XFlush(dpy);\
-        req = (x/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
-        req->reqType = X_/**/name;\
-        req->length = old_length>>2;\
-        dpy->bufptr += old_length;\
-        dpy->request++
-#endif
 
 #include <X11/Xlibint.h>
 
