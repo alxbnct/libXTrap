@@ -36,11 +36,7 @@ SOFTWARE.
 #ifdef UWS40
 #define _XSetLastRequestRead _SetLastRequestRead
 #endif
-#ifndef vms
 extern unsigned long _XSetLastRequestRead(Display *dpy, xGenericReply *rep);
-#else
-static unsigned long _XSetLastRequestRead(Display *dpy, xGenericReply *rep);
-#endif
 
 static XExtensionInfo *xtrap_info = NULL;
 static /* const */ char *xtrap_extension_name = XTrapExtName;
@@ -181,38 +177,4 @@ Bool XETrapQueryExtension(Display *dpy,INT32 *event_base_return,
     return(status);
 }
 
-#ifdef vms
-/* Hard-coded since this didn't make it into XLibShr's xfer vector */
-/* From [.XLIBEL.SRC]XLibInt.c in VMS Source Pool */
-unsigned long _XSetLastRequestRead(Display *dpy, xGenericReply *rep)
-{
-    register unsigned long      newseq, lastseq;
-
-    /*
-     * KeymapNotify has no sequence number, but is always guaranteed
-     * to immediately follow another event, except when generated via
-     * SendEvent (hmmm).
-     */
-    if ((rep->type & 0x7f) == KeymapNotify)
-        return(dpy->last_request_read);
-
-    newseq = (dpy->last_request_read & ~((unsigned long)0xffff)) |
-             rep->sequenceNumber;
-    lastseq = dpy->last_request_read;
-    while (newseq < lastseq) {
-        newseq += 0x10000;
-        if (newseq > dpy->request) {
-            (void) fprintf (stderr,
-            "Xlib:  sequence lost (0x%lx > 0x%lx) in reply type 0x%x!\n",
-                                    newseq, dpy->request,
-                                   (unsigned int) rep->type);
-            newseq -= 0x10000;
-           break;
-        }
-    }
-
-    dpy->last_request_read = newseq;
-    return(newseq);
-}
-#endif
 

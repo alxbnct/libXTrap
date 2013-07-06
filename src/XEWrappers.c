@@ -24,48 +24,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
-#ifdef vms
-#define IS_AT_OR_AFTER(t1, t2) (((t2).high > (t1).high) \
-        || (((t2).high == (t1).high)&& ((t2).low >= (t1).low)))
-typedef struct _vms_time {
-     unsigned long low;
-     unsigned long high;
-}vms_time;                                      /* from IntrinsicP.h */
-#ifdef VMSDW_V3
-typedef struct _ModToKeysymTable {
-    Modifiers mask;
-    int count;
-    int index;
-} ModToKeysymTable;                             /* from TranslateI.h */
-typedef struct _ConverterRec **ConverterTable;  /* from ConvertI.h */
-#include "libdef.h"
-typedef struct _CallbackRec *CallbackList;      /* from CallbackI.h */
-typedef struct _XtGrabRec  *XtGrabList;         /* from EventI.h */
-#include <X11/PassivGraI.h>
-#include <X11/InitialI.h>
-#else  /* VMSDW_V3 */
-typedef struct _ModToKeysymTable {
-    Modifiers mask;
-    int count;
-    int index;
-} ModToKeysymTable;                             /* from TranslateI.h */
-typedef struct _ConverterRec **ConverterTable;  /* from ConvertI.h */
-#include "libdef.h"
-#define NFDBITS	(sizeof(fd_mask) * 8)
-typedef long  fd_mask;
-#ifndef howmany
-#define	howmany(x, y)	(((x)+((y)-1))/(y))
-#endif /* howmany */
-typedef	struct Fd_set {
-	fd_mask	fds_bits[howmany(256, NFDBITS)];
-} Fd_set;                                       /* from fd.h */
-#include <X11/InitializeI.h>
-#endif  /* VMSDW_V3 */
-#else  /* !vms */
 #include <X11/IntrinsicI.h>
 #define IS_AT_OR_AFTER(t1, t2) (((t2).tv_sec > (t1).tv_sec) \
         || (((t2).tv_sec == (t1).tv_sec)&& ((t2).tv_usec >= (t1).tv_usec)))
-#endif /* vms */
 
 /* The following has been lifted from NextEvent.c  in X11R4 */
 
@@ -162,12 +123,8 @@ XtInputMask XETrapAppPending(XtAppContext app)
     te_ptr = app->timerQueue;
     while (te_ptr != NULL)
     {
-#ifndef vms
         (void)gettimeofday(&cur_time, NULL);
         FIXUP_TIMEVAL(cur_time);
-#else
-        sys$gettim(&cur_time);
-#endif /* vms */
         if (IS_AT_OR_AFTER(te_ptr->te_timer_value, cur_time))
         {   /* this timer is due to fire */
             retmask |= XtIMTimer;
@@ -177,21 +134,10 @@ XtInputMask XETrapAppPending(XtAppContext app)
     }
 
     /* Now test for alternate input */
-#ifndef vms
     if (app->outstandingQueue != NULL)
     {
         retmask |= XtIMAlternateInput;
     }
-#else /* vms */
-    if ((app->Input_EF_Mask != 0L) && ((status=SYS$READEF(1,&efnMask)) == 1))
-    {   /* we have input configured & retrieved the efn cluster 0 */
-        efnMask &= app->Input_EF_Mask;  /* mask out non-input */
-        if (efnMask)                    /* any left? */
-        {                               /* yes, an alt-input efn is set */
-            retmask |= XtIMAlternateInput;
-        }
-    }
-#endif  /* vms */
     return(retmask);
 }
 
@@ -263,63 +209,9 @@ int XETrapAppWhileLoop(XtAppContext app, XETC *tc, Bool *done)
 /* Wait for either Timer, Alternate Input, or an X Event to arrive */
 int XETrapWaitForSomething(XtAppContext app)
 {
-#ifndef vms
     return(_XtWaitForSomething(app, FALSE, FALSE, FALSE, FALSE, TRUE
 #ifdef XTHREADS
     , FALSE
 #endif /* XTHREADS */
     , NULL));
-#else   /* vms */
-#define IS_AFTER(t1,t2) (((t2).high > (t1).high) \
-       ||(((t2).high == (t1).high)&& ((t2).low > (t1).low)))
-    long retval = 0L;
-    TimerEventRec *te_ptr;
-    vms_time cur_time,result_time;
-    int status = 0;
-    long quotient, remainder = 0;
-    int d;
-
-    if (app->timerQueue!= NULL) 
-    {   /* check timeout queue */
-        cur_time.low = cur_time.high = result_time.low = result_time.high = 0;
-        te_ptr = app->timerQueue;
-        sys$gettim(&cur_time);
-        if ((IS_AFTER(app->timerQueue->te_timer_value, cur_time))  &&
-            (app->timerQueue->te_proc != 0)) 
-        {   /* it's fired! return! */
-            return(0);
-        }
-        /* Jump through hoops to get the time specified in the queue into
-         * milliseconds 
-         */
-        status = lib$sub_times (&(te_ptr->te_timer_value.low), &cur_time,
-                                &result_time);
-        /*
-         * See if this timer has expired.  A timer is considered expired
-         * if it's value in the past (the NEGTIM case) or if there is
-         * less than one integral milli second before it would go off.
-         */
-
-        if (status == LIB$_NEGTIM ||
-            (result_time.high == -1 && result_time.low > -10000)) 
-        {   /* We've got a timer and it's ready to fire! */
-            return(0);
-        }
-        else if ((status & 1) == 1) 
-        {
-            lib$ediv (&(10000), &result_time, &quotient, &remainder);
-            quotient *= -1;         /* flip the sign bit */
-
-            return(XMultiplexInput(app->count, &(app->list[0L]),
-                app->Input_EF_Mask, quotient, 0L, &retval));
-        }
-        else
-        {
-            status = -1;
-        }
-    }
-     
-    return((status == -1 ? -1 : XMultiplexInput(app->count, &(app->list[0L]),
-           app->Input_EF_Mask, 0L, 0L, &retval)));
-#endif  /* vms */
 }

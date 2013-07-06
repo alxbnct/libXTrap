@@ -58,76 +58,7 @@ SOFTWARE.
         dpy->request++
 #endif
 
-#ifndef vms
 #include <X11/Xlibint.h>
-#else   /* vms */
-#define SyncHandle() \
-    if (dpy->synchandler) (*dpy->synchandler)(dpy)
-/*
- * LockDisplay uses an undocumented feature in V5 of VMS that allows
- * disabling ASTs without calling $SETAST.  A bit is set in P1 space
- * that disables a user mode AST from being delivered to this process.
- * 
- */
-#define LockDisplay(dis)             \
-{   globalref char ctl$gb_soft_ast_disable;    \
-    globalref char ctl$gb_lib_lock;        \
-    globalref short ctl$gw_soft_ast_lock_depth;    \
-    if ( ctl$gb_soft_ast_disable == 0 ) {    \
-    ctl$gb_soft_ast_disable = 1;        \
-    ctl$gb_lib_lock = 1;            \
-    ctl$gw_soft_ast_lock_depth = 1;        \
-    }                        \
-    else ctl$gw_soft_ast_lock_depth++;        \
-}
-
-/*
- * UnlockDisplay clears the AST disable bit, then checks to see if an
- * AST delivery attempt was made during the critical section.  If so,
- * reenable_ASTs is set, and $SETAST must be called to turn AST delivery
- * back on.
- * 
- * Note that it assumed that LockDisplay and UnlockDisplay appear in
- * matched sets within a single routine.
- */
-#define UnlockDisplay(dis)             \
-{   globalref char ctl$gb_reenable_asts;    \
-    globalref char ctl$gb_soft_ast_disable;    \
-    globalref char ctl$gb_lib_lock;        \
-    globalref short ctl$gw_soft_ast_lock_depth;    \
-    if (!--ctl$gw_soft_ast_lock_depth)         \
-    if ( ctl$gb_lib_lock ) {        \
-        ctl$gb_lib_lock = 0;        \
-            ctl$gb_soft_ast_disable = 0;    \
-        if (ctl$gb_reenable_asts != 0)    \
-        sys$setast(1);            \
-        }                    \
-}
-
-#define WORD64ALIGN
-#if defined(__STDC__) && !defined(UNIXCPP)
-#define GetReq(name, req) \
-        WORD64ALIGN\
-        if ((dpy->bufptr + SIZEOF(x##name##Req)) > dpy->bufmax)\
-                _XFlush(dpy);\
-        req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
-        req->reqType = X_##name;\
-        req->length = (SIZEOF(x##name##Req))>>2;\
-        dpy->bufptr += SIZEOF(x##name##Req);\
-        dpy->request++
-
-#else  /* non-ANSI C uses empty comment instead of "##" for token concat */
-#define GetReq(name, req) \
-        WORD64ALIGN\
-        if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
-                _XFlush(dpy);\
-        req = (x/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
-        req->reqType = X_/**/name;\
-        req->length = (SIZEOF(x/**/name/**/Req))>>2;\
-        dpy->bufptr += SIZEOF(x/**/name/**/Req);\
-        dpy->request++
-#endif
-#endif /* vms */
 
 #include <X11/extensions/xtraplib.h>
 #include <X11/extensions/xtraplibp.h>
